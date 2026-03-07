@@ -15,6 +15,10 @@ A blue team home lab built to simulate a Security Operations Centre (SOC) enviro
 | Log Forwarding | Splunk Universal Forwarder |
 
 ---
+## SOC Dashboard
+![SOC Dashboard](screenshots/dashboard.png)
+
+---
 
 ## Architecture
 
