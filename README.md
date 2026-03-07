@@ -50,6 +50,7 @@ The Windows 11 VM generates security telemetry via Sysmon and Windows Event Logg
 .\Sysmon64.exe -accepteula -i sysmonconfig-export.xml
 Get-Service Sysmon64  # Status: Running
 ```
+![Sysmon Running](screenshots/sysmon_running.png)
 
 ### 3. Splunk Universal Forwarder
 - Installed on the Windows VM
@@ -89,7 +90,11 @@ index=main EventCode=4625
 - Severity: High
 - Action: Add to Triggered Alerts
 
+![Triggered Alert](screenshots/triggered_alert.png)
+
 **Simulated:** Deliberately entered incorrect passwords 5+ times on the Windows VM. Detection fired correctly, identifying the account name and source IP.
+
+![Brute Force Detection Results](screenshots/brute_force_results.png)
 
 ---
 
