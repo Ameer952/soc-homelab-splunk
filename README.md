@@ -71,7 +71,7 @@ Monitored sources:
 
 ## Detections Built
 
-### Brute Force Login Detection
+### 1. Brute Force Login Detection
 
 **Description:** Identifies accounts with repeated failed authentication attempts — a key indicator of brute force or credential stuffing attacks.
 
@@ -98,6 +98,61 @@ index=main EventCode=4625
 
 ---
 
+### 2. New User Account Creation
+
+**Description:** Detects when a new local user account is created — a common attacker persistence technique used to maintain access after initial compromise.
+
+**Event:** Windows Security Log – EventCode 4720 (User Account Created)
+
+**Splunk Search:**
+```spl
+index=main EventCode=4720
+| table _time, Account_Name, ComputerName, Message
+```
+
+**Simulated:** Created a test user account via PowerShell (`net user HackerUser /add`). Detection fired correctly identifying the new account name and host.
+
+![New User Account Detection](screenshots/new_user_account.png)
+
+---
+
+### 3. Privilege Escalation – Admin Group Addition
+
+**Description:** Detects when a user is added to the local Administrators group — a key indicator of privilege escalation after initial access.
+
+**Event:** Windows Security Log – EventCode 4732 (Member Added to Security-Enabled Local Group)
+
+**Splunk Search:**
+```spl
+index=main EventCode=4732 Group_Name=Administrators
+| table _time, Account_Name, Group_Name, ComputerName
+```
+
+**Simulated:** Added a test user to the Administrators group via PowerShell (`net localgroup administrators HackerUser /add`). Detection correctly identified the account and group.
+
+![Privilege Escalation Detection](screenshots/privilege_escalation.png)
+
+---
+
+### 4. Suspicious PowerShell Execution
+
+**Description:** Detects PowerShell process creation events on the endpoint, filtering out known legitimate processes. PowerShell is one of the most commonly abused tools in attacker tradecraft.
+
+**Event:** Windows Security Log – EventCode 4688 (Process Creation)
+
+**Splunk Search:**
+```spl
+index=main EventCode=4688 New_Process_Name="*powershell*" 
+NOT New_Process_Name="*SplunkUniversalForwarder*"
+| table _time, New_Process_Name, Process_Command_Line, ComputerName
+```
+
+**Simulated:** Ran PowerShell commands with suspicious flags (`-nop -w hidden`) from the VM. Detection correctly captured the process execution events.
+
+![PowerShell Detection](screenshots/powershell_detection.png)
+
+---
+
 ## SOC Dashboard
 
 Built a multi-panel Splunk dashboard for real-time security monitoring:
@@ -117,7 +172,8 @@ Built a multi-panel Splunk dashboard for real-time security monitoring:
 
 - Configured an end-to-end log pipeline from endpoint to SIEM
 - Understood the difference between native Windows Event Logs and Sysmon telemetry
-- Wrote real detection rules using Splunk SPL (Search Processing Language)
+- Wrote detection rules in Splunk SPL covering brute force, persistence, privilege escalation, and execution techniques
+- Enabled process creation auditing via auditpol to capture EventCode 4688
 - Debugged VirtualBox network connectivity (NAT vs Host-Only adapters)
 - Understood why Sysmon dramatically improves endpoint visibility compared to Windows logging alone
 
